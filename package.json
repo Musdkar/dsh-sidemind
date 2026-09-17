@@ -1,6 +1,6 @@
 {
   "name": "dsh-sidemind",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Parallel side questions and side conversations for DeepSeek Harness without polluting the main context.",
   "type": "module",
   "main": "lib/index.js",
@@ -21,6 +21,12 @@
   "license": "MIT",
   "engines": {
     "node": ">=22.19"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-brand": "*",
+    "@deepseek-ai/dsh-llm": "*",
+    "@deepseek-ai/dsh-session": "*",
+    "@deepseek-ai/dsh-subagent": "*"
   },
   "scripts": {
     "test": "node --test",
