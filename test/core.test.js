@@ -1,6 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { SideMindRegistry, createSnapshot, renderBtwPrompt } from '../lib/core.js'
+import {
+  SIDE_CONTROL_PREFIX,
+  SideMindRegistry,
+  createSnapshot,
+  parseSideCommandInput,
+  renderBtwPrompt,
+} from '../lib/core.js'
 
 test('side lifecycle is ephemeral', () => {
   const registry = new SideMindRegistry()
@@ -26,4 +32,23 @@ test('BTW prompt explicitly forbids tools and parent mutation', () => {
   assert.match(prompt, /Do not use tools/)
   assert.match(prompt, /Do not change the parent conversation/)
   assert.match(prompt, /Why use a fork\?/)
+})
+
+test('/side accepts an initial question as normal user text', () => {
+  assert.deepEqual(parseSideCommandInput('why use a fork?'), {
+    kind: 'start',
+    question: 'why use a fork?',
+  })
+  assert.deepEqual(parseSideCommandInput(''), {
+    kind: 'start',
+    question: '',
+  })
+})
+
+test('internal side control remains separate from user questions', () => {
+  const request = { op: 'prompt', id: 'child-1', text: 'next' }
+  assert.deepEqual(parseSideCommandInput(`${SIDE_CONTROL_PREFIX}${JSON.stringify(request)}`), {
+    kind: 'control',
+    request,
+  })
 })
