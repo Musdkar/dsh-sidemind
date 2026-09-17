@@ -1,6 +1,6 @@
 {
   "name": "dsh-sidemind",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Parallel side questions and side conversations for DeepSeek Harness without polluting the main context.",
   "type": "module",
   "main": "lib/index.js",
