@@ -1,0 +1,74 @@
+{
+  "name": "dsh-sidemind",
+  "version": "0.0.1",
+  "description": "Parallel side questions and side conversations for DeepSeek Harness without polluting the main context.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./core": "./lib/core.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "docs",
+    "test",
+    "README.md",
+    "LICENSE",
+    "cordis.patch.yml"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.19"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check lib/index.js && node --check lib/core.js && node --check lib/client.js"
+  },
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "harness",
+    "dsh",
+    "dsh-plugin",
+    "side",
+    "btw",
+    "branch",
+    "conversation"
+  ],
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-commands",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "dsh": ">=0.1.0-rc.7",
+      "node": ">=22.19",
+      "systems": [
+        "macOS",
+        "Linux",
+        "Windows"
+      ],
+      "profiles": [
+        "web"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Musdkar/dsh-sidemind.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Musdkar/dsh-sidemind/issues"
+  },
+  "homepage": "https://github.com/Musdkar/dsh-sidemind#readme"
+}
