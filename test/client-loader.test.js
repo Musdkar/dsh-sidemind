@@ -10,3 +10,9 @@ test('client bundle registers under the package name', () => {
   assert.ok(match, 'client bundle must register itself through __ModuleLoader__.load')
   assert.equal(match[1], pkg.name)
 })
+
+test('sidebar cleanup uses the tab occurrence signal instead of newer close-handler API', () => {
+  assert.doesNotMatch(client, /sidebarRight\.registerCloseHandler/u)
+  assert.match(client, /tab\?\.signal/u)
+  assert.match(client, /addEventListener\('abort'/u)
+})
