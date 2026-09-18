@@ -6,6 +6,7 @@ import {
   createSnapshot,
   parseSideCommandInput,
   renderBtwPrompt,
+  renderForkBoundary,
 } from '../lib/core.js'
 
 test('side lifecycle is ephemeral', () => {
