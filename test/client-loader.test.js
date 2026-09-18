@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises'
 
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
 const clientEntry = String(pkg.exports['./client'])
-const client = await readFile(new URL(`../${clientEntry.replace(/^\\.\\//, '')}`, import.meta.url), 'utf8')
+const clientPath = clientEntry.startsWith('./') ? clientEntry.slice(2) : clientEntry
+const client = await readFile(new URL(`../${clientPath}`, import.meta.url), 'utf8')
 
 test('client bundle registers under the package name', () => {
   const match = /__ModuleLoader__\\.load\\(\\{\\s*id:\\s*['"]([^'"]+)['"]/u.exec(client)
