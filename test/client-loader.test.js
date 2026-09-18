@@ -8,9 +8,14 @@ const clientPath = clientEntry.startsWith('./') ? clientEntry.slice(2) : clientE
 const client = await readFile(new URL(`../${clientPath}`, import.meta.url), 'utf8')
 
 test('client bundle registers under the package name', () => {
-  const match = /__ModuleLoader__\\.load\\(\\{\\s*id:\\s*['"]([^'"]+)['"]/u.exec(client)
-  assert.ok(match, 'client bundle must register itself through __ModuleLoader__.load')
-  assert.equal(match[1], pkg.name)
+  const marker = "id: '"
+  const loaderStart = client.indexOf('__ModuleLoader__.load({')
+  assert.notEqual(loaderStart, -1, 'client bundle must register itself through __ModuleLoader__.load')
+  const idStart = client.indexOf(marker, loaderStart)
+  assert.notEqual(idStart, -1, 'client bundle must declare a loader id')
+  const valueStart = idStart + marker.length
+  const valueEnd = client.indexOf("'", valueStart)
+  assert.equal(client.slice(valueStart, valueEnd), pkg.name)
 })
 
 test('sidebar cleanup uses the tab occurrence signal instead of newer close-handler API', () => {
