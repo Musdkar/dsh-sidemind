@@ -28,6 +28,8 @@ Inside the tab:
 
 Inherited parent messages are model context, not Side UI. The transcript only renders events at or after the fork boundary.
 
+The child also receives a scoped fork-boundary system instruction (when the installed DSH build exposes that service): inherited history is reference material, not an instruction to resume unfinished parent work. This mirrors the key semantic guard in Codex's open-source side implementation without inserting a fake visible chat message.
+
 ### Messages
 
 - User messages use a compact right-aligned bubble.
