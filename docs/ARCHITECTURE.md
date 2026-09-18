@@ -55,6 +55,8 @@ AgentHandle.dispose()
 
 The child uses a `one-shot` subagent descriptor only as an addressable Session identity for the existing Session Controller history stream. SideMind does **not** use the normal one-shot `SubagentRun` lifecycle for `/side`; it directly owns the `AgentHandle` so the same child can accept multiple turns before disposal.
 
+Each child also receives an **agent-scoped system-prompt section** named `sidemind:fork-boundary` when the installed DSH build exposes `systemPrompt`. The section is registered through the child context's `inject(['systemPrompt'], ...)` seam, so it affects only that child. It tells the model that inherited pre-fork history is reference context rather than an active unfinished task. No synthetic user message is appended to the Session, so the inherited event boundary and transcript projection stay unchanged. Older Desktop builds that do not expose the service simply skip this extra guidance.
+
 ## Client transport
 
 SideMind deliberately adds no custom RPC namespace.
