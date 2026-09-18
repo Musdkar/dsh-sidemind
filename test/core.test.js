@@ -52,3 +52,13 @@ test('internal side control remains separate from user questions', () => {
     request,
   })
 })
+
+test('fork boundary treats inherited history as reference context', () => {
+  const side = renderForkBoundary('side')
+  const btw = renderForkBoundary('btw')
+  assert.match(side, /reference context only/)
+  assert.match(side, /Do not continue unfinished plans/)
+  assert.match(side, /read-only tools/)
+  assert.match(btw, /Answer the side question directly/)
+  assert.match(btw, /Do not use tools/)
+})
