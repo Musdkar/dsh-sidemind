@@ -4,33 +4,54 @@
 
 **Parallel conversations without polluting your main context.**
 
-SideMind is an experimental DeepSeek Harness Web plugin with two intentionally different surfaces:
+SideMind is an experimental DeepSeek Harness Web/Desktop plugin built around two deliberately different interaction models:
 
-- `/btw <question>` — a temporary one-turn side question shown in a floating overlay. It inherits the main conversation up to the latest completed turn, exposes no tools, and is destroyed when dismissed.
-- `/side` — a temporary multi-turn conversation in the native right sidebar. It forks once from the current conversation, allows a conservative read-only tool set, and is destroyed when its tab is closed.
+- `/side [question]` — open an ephemeral **multi-turn side thread** in DSH's native right sidebar. It forks from the latest completed main turn, supports read-only tools, and is destroyed when its tab is actually closed.
+- `/btw <question>` — ask an ephemeral **single-response side question** in a compact overlay above the main composer. It sees the current completed conversation context, has no tools, and is destroyed when dismissed.
 
-## Status
+## 0.2.0
 
-`0.1.0` connects the Host and Web halves end-to-end:
+0.2 is a UI/interaction rewrite informed by the open-source Codex TUI `/side` implementation, Claude Code's documented `/btw` behavior, and DSH's own UI primitives.
 
-- Host-side ephemeral child Agents created with DSH's public Agent/Session primitives;
-- completed-turn fork semantics, so parent and side histories diverge after creation;
-- `/btw` with an empty tool allow-list;
-- `/side` with an explicit read-only tool allow-list;
-- native `session.follow` history + assistant-stream transport for the SideMind UI;
-- a right-sidebar `/side` surface and `conversation.input.overlay` `/btw` surface;
-- close/dismiss cleanup through the owning `AgentHandle.dispose()`.
+### Side
 
-The main Session does retain ordinary `command/run` and `command/done` lifecycle events for `/side` and `/btw`, because those are DSH's command admission records. SideMind sets `recordInput: false`, and successful control operations put no side prompt or answer text in those records. A newly-created child id and fork boundary are returned in the start command result so the Web client can address the child stream.
+- no duplicate giant SideMind header inside the native DSH tab;
+- a thin `From main thread · read-only · ephemeral` context strip;
+- inherited parent history stays model-visible but is hidden from the Side transcript;
+- compact user bubbles + document-style assistant Markdown;
+- DSH `MarkdownText` when available, with a compatibility fallback;
+- copy-as-Markdown action on assistant replies;
+- auto-focused, auto-growing composer;
+- `Enter` sends and `Shift+Enter` inserts a newline;
+- `/side why is this implemented this way?` creates the branch and sends the first question immediately.
+
+### BTW
+
+- one-question/one-answer overlay rather than a miniature second chat app;
+- compact question row and Markdown answer;
+- `Esc` closes the overlay and destroys the child;
+- `C` copies the current answer as raw Markdown when focus is outside a text field;
+- no tools and no write-back to Main.
+
+See [`docs/DESIGN.md`](docs/DESIGN.md) for the reference analysis and interaction rationale.
 
 ## Isolation model
 
-1. SideMind never sends side answers back into the parent Agent automatically.
-2. Side prompt bodies live only in the ephemeral child Session.
-3. `/btw` has no model tools.
-4. `/side` currently allows only known read-only tools (`read`, `read_image`, `glob`, `grep`, Web read/search, Session query tools, MCP resource reads, and `lsp` when present). Unknown/custom tools are denied by default.
-5. Closing the corresponding UI disposes the child Agent and removes its in-memory Session from the live registry/store.
-6. SideMind does not use DSH continuable-subagent persistence, specifically to preserve close-means-destroy semantics.
+1. Both surfaces inherit only through the latest completed parent turn and then diverge.
+2. SideMind never sends side answers back into the parent Agent automatically.
+3. Side prompt bodies live only in the ephemeral child Session.
+4. `/btw` exposes no model tools.
+5. `/side` allows only a conservative known read-only tool set; unknown/custom tools fail closed.
+6. Closing the corresponding UI disposes the owning child `AgentHandle` and removes the in-memory child Session.
+7. SideMind deliberately avoids DSH's persistence-backed continuable-subagent path so close still means destroy.
+
+The parent Session still records ordinary DSH command lifecycle events for command admission. SideMind uses `recordInput: false`, and successful internal control calls contain neither the side prompt body nor the side answer in those parent command records.
+
+## Compatibility
+
+DSH is still a rapidly changing developer preview. SideMind avoids newer sidebar close-handler APIs and watches the tab occurrence `AbortSignal` instead, which works with the older DSH build currently shipped in the tested DSH Desktop.
+
+The browser client prefers DSH-native UI primitives but keeps compatibility fallbacks for Desktop builds that expose a smaller client-module surface.
 
 ## Development
 
@@ -39,9 +60,10 @@ npm test
 npm run check
 ```
 
-This repository targets the rapidly changing DSH developer preview. `0.1.0` was written against the current public Agent, Session Controller, Commands, sidebar, and overlay APIs; runtime integration should be rechecked when upgrading DSH across breaking preview releases.
+See:
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the lifecycle and transport details.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Interaction design](docs/DESIGN.md)
 
 ## License
 
