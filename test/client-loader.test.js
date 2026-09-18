@@ -38,7 +38,7 @@ test('side and btw render Markdown through the DSH primitive when available', ()
 })
 
 test('0.2 client exposes the compact side and BTW surfaces', () => {
-  assert.equal(pkg.version, '0.2.0')
+  assert.equal(pkg.version, '0.2.1')
   assert.equal(clientEntry, './lib/client.js')
   assert.equal(client.includes('sidemind-contextbar'), true)
   assert.equal(client.includes('sidemind-composer'), true)
