@@ -9,9 +9,9 @@ SideMind is an experimental DeepSeek Harness Web/Desktop plugin built around two
 - `/side [question]` — open an ephemeral **multi-turn side thread** in DSH's native right sidebar. It forks from the latest completed main turn, supports read-only tools, and is destroyed when its tab is actually closed.
 - `/btw <question>` — ask an ephemeral **single-response side question** in a compact overlay above the main composer. It sees the current completed conversation context, has no tools, and is destroyed when dismissed.
 
-## 0.2.1
+## 0.2.2
 
-0.2 is a UI/interaction rewrite informed by the open-source Codex TUI `/side` implementation, Claude Code's documented `/btw` behavior, and DSH's own UI primitives. 0.2.1 also adds a child-scoped fork-boundary system prompt so inherited parent history is treated as reference context rather than an unfinished task to continue.
+0.2 is a UI/interaction rewrite informed by the open-source Codex TUI `/side`, Grok Build's open-source `/btw` panel, and DSH's own UI primitives. 0.2.1 added a child-scoped fork-boundary system prompt; 0.2.2 replaces the BTW mini-chat chrome with Grok's compact bordered-panel interaction.
 
 ### Side
 
@@ -27,11 +27,14 @@ SideMind is an experimental DeepSeek Harness Web/Desktop plugin built around two
 
 ### BTW
 
-- one-question/one-answer overlay rather than a miniature second chat app;
-- compact question row and Markdown answer;
-- `Esc` closes the overlay and destroys the child;
-- `C` copies the current answer as raw Markdown when focus is outside a text field;
-- no tools and no write-back to Main.
+- Grok Build-style bordered panel directly above the composer;
+- the top border itself carries `/btw <question>` and an always-visible `[Esc]` hint;
+- Loading / Done / Error states with no duplicate question card, product header, or footer;
+- DSH Markdown rendering for the answer;
+- bounded internal scrolling for long replies; completed long answers accept Arrow/Page/Home/End navigation;
+- `Esc` closes the panel and destroys the child;
+- no tools and no write-back to Main;
+- intentionally **does not** persist dismissed BTW answers into Main scrollback.
 
 See [`docs/DESIGN.md`](docs/DESIGN.md) for the reference analysis and interaction rationale.
 

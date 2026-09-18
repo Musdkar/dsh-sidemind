@@ -38,11 +38,21 @@ test('side and btw render Markdown through the DSH primitive when available', ()
 })
 
 test('0.2 client exposes the compact side and BTW surfaces', () => {
-  assert.equal(pkg.version, '0.2.1')
+  assert.equal(pkg.version, '0.2.2')
   assert.equal(clientEntry, './lib/client.js')
   assert.equal(client.includes('sidemind-contextbar'), true)
   assert.equal(client.includes('sidemind-composer'), true)
   assert.equal(client.includes('sidemind-btw-header'), true)
   assert.equal(client.includes('C copy Markdown'), true)
   assert.equal(client.includes('Enter send'), true)
+})
+
+
+test('0.2.2 uses the Grok-style BTW panel contract', () => {
+  assert.equal(client.includes('sidemind-btw-title'), true)
+  assert.equal(client.includes("'[Esc]'"), true)
+  assert.equal(client.includes("'Answering…'"), true)
+  assert.equal(client.includes('sidemind-btw-body'), true)
+  assert.equal(client.includes('sidemind-btw-question'), false)
+  assert.equal(client.includes('C copy Markdown'), false)
 })

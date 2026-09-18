@@ -7,7 +7,8 @@ SideMind is intentionally not a second copy of the main DSH chat. Its two surfac
 The 0.2 UI was redesigned after comparing three sources:
 
 - **Codex CLI/TUI**: the open-source Codex implementation treats `/side` and `/btw` as an **ephemeral fork**. The fork inherits the parent context, but the side transcript starts visually at the fork boundary and disappears when the side conversation is closed. Source: [openai/codex](https://github.com/openai/codex), especially `codex-rs/tui/src/app/side.rs` and `slash_command.rs`.
-- **Claude Code `/btw`**: Anthropic documents `/btw` as a **dismissible one-response overlay** that sees the existing conversation, has no tool access, stays out of the main history, supports raw-Markdown copy, and can run independently of the main turn. Source: [Claude Code interactive mode](https://code.claude.com/docs/en/interactive-mode#side-questions-with-btw).
+- **Grok Build `/btw`**: the open-source implementation renders a compact rounded panel immediately above the prompt. The question is embedded in the top border as `/btw <question>`, `[Esc]` is always reserved on the right, the body has Loading / Done / Error states, completed Markdown is internally scrollable, and a finished long answer can take keyboard focus for navigation. Source: [xai-org/grok-build](https://github.com/xai-org/grok-build), especially `crates/codegen/xai-grok-pager/src/views/btw_overlay.rs` and `scrollback/blocks/btw.rs`.
+- **Claude Code `/btw`** remains a semantic comparison: one side question that stays outside the main conversation and does not use tools. SideMind no longer uses Claude's presentation as its primary visual reference.
 - **DeepSeek Harness**: SideMind stays inside DSH's native right-sidebar and input-overlay extension points and reuses `@deepseek-ai/dsh-client-ui-primitives` (especially `MarkdownText`) when that module is available in the installed Desktop build.
 
 Codex Desktop itself is not open source; the public Codex CLI/TUI is the implementation reference. The public Claude Code repository does not contain the main CLI implementation, so SideMind uses Anthropic's documented behavior rather than pretending to copy unavailable source.
@@ -51,23 +52,22 @@ Closing the actual tab destroys the child Agent. Collapsing the right sidebar or
 
 SideMind keeps support for multiple independent Side tabs even though the Codex TUI usually presents one active side conversation.
 
-## `/btw`: a quick side question
+## `/btw`: a Grok-style inline panel
 
-BTW is deliberately **not** rendered like a chat transcript.
+BTW is deliberately **not** rendered like a mini chat.
 
-It is a compact overlay anchored above the main composer:
+The 0.2.2 surface follows Grok Build's open-source panel structure:
 
-1. small identity line: **BTW · no tools · ephemeral**;
-2. the question in a muted inset row;
-3. one Markdown answer;
-4. a tiny shortcut footer.
+1. one rounded border anchored just above the main composer;
+2. `/btw <question>` embedded into the top border and truncated before it can cover the close hint;
+3. `[Esc]` permanently visible on the top-right edge;
+4. a body with exactly one state: **Answering…**, the Markdown answer, or an error;
+5. bounded body height with internal scrolling for long replies;
+6. after a completed long answer, focus moves to the panel so Arrow/Page/Home/End navigation works without moving the main page.
 
-Keyboard behavior in 0.2:
+Unlike Grok Build, SideMind does **not** commit a dismissed answer into the main scrollback. Dismissal still destroys the child Agent and its temporary Session, preserving SideMind's original close-means-destroy contract.
 
-- `Esc`: dismiss and destroy the BTW child.
-- `C`: copy the current answer as raw Markdown when focus is not in a text field.
-
-This borrows Claude Code's one-response overlay and copy behavior, but SideMind intentionally keeps its original close-means-destroy contract. It does **not** retain the newest 20 BTW exchanges or reopen dismissed answers.
+Grok Build also supports `/btw` embedded mid-message. SideMind 0.2.2 does not yet intercept arbitrary DSH composer text, so its public syntax remains a leading `/btw <question>` command.
 
 ## DSH-native rendering
 
