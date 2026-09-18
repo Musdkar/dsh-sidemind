@@ -9,9 +9,9 @@ SideMind is an experimental DeepSeek Harness Web/Desktop plugin built around two
 - `/side [question]` — open an ephemeral **multi-turn side thread** in DSH's native right sidebar. It forks from the latest completed main turn, supports read-only tools, and is destroyed when its tab is actually closed.
 - `/btw <question>` — ask an ephemeral **single-response side question** in a compact overlay above the main composer. It sees the current completed conversation context, has no tools, and is destroyed when dismissed.
 
-## 0.2.0
+## 0.2.1
 
-0.2 is a UI/interaction rewrite informed by the open-source Codex TUI `/side` implementation, Claude Code's documented `/btw` behavior, and DSH's own UI primitives.
+0.2 is a UI/interaction rewrite informed by the open-source Codex TUI `/side` implementation, Claude Code's documented `/btw` behavior, and DSH's own UI primitives. 0.2.1 also adds a child-scoped fork-boundary system prompt so inherited parent history is treated as reference context rather than an unfinished task to continue.
 
 ### Side
 
