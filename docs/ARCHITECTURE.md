@@ -6,21 +6,22 @@ SideMind has two temporary surfaces sharing the same fork rule: inherit the pare
 
 ### `/btw`
 
-- Temporary, single-turn side question.
-- UI: `conversation.input.overlay`.
+- Temporary, single-response side question.
+- UI: compact `conversation.input.overlay` above the main composer.
 - Inherits the completed parent transcript at creation time.
 - Tool policy: `allow: []`.
-- Dismissal disposes the child AgentHandle.
+- Dismissal disposes the child `AgentHandle`.
 - Question and answer content never enter the parent conversation history.
 
 ### `/side`
 
 - Temporary, multi-turn side conversation.
 - UI: native right-sidebar tab (`sidemind-side`).
+- `/side` opens an empty side thread; `/side <question>` also sends the first turn.
 - Forks once from the parent completed-turn prefix.
 - Later prompts are delivered directly to the child Agent's inbox.
 - Tool policy: explicit known read-only allow-list; everything else is denied.
-- Closing the tab disposes the child AgentHandle.
+- Closing the tab disposes the child `AgentHandle`.
 
 ## Host lifecycle
 
@@ -29,7 +30,7 @@ The Host plugin owns an in-memory map keyed by child Session id.
 ```text
 main Agent
   |
-  | /side or /btw (recordInput: false)
+  | /side [question] or /btw <question> (recordInput: false)
   v
 completed-turn seed
   |
@@ -42,7 +43,7 @@ parent.ctx.agents.create(...)
   |
   +-- /btw: first prompt immediately queued
   |
-  +-- /side: later prompts arrive via internal /side control calls
+  +-- /side: optional first prompt + later internal control prompts
   |
 close/dismiss
   v
@@ -52,13 +53,13 @@ AgentHandle.dispose()
   -> remove child Session from the live store
 ```
 
-The child uses a `one-shot` subagent descriptor only as an addressable Session identity for the existing Session Controller history stream. SideMind does **not** use the normal one-shot `SubagentRun` lifecycle for `/side`; it directly owns the AgentHandle so the same child can accept multiple turns before disposal.
+The child uses a `one-shot` subagent descriptor only as an addressable Session identity for the existing Session Controller history stream. SideMind does **not** use the normal one-shot `SubagentRun` lifecycle for `/side`; it directly owns the `AgentHandle` so the same child can accept multiple turns before disposal.
 
 ## Client transport
 
 SideMind deliberately adds no custom RPC namespace.
 
-The user-visible `/side` and `/btw` commands return only an opaque start token containing:
+A newly created `/side` or `/btw` returns only an opaque start token containing:
 
 - kind (`side` or `btw`)
 - child Session id
@@ -72,13 +73,39 @@ The client then opens DSH's existing `session.follow` stream with a subagent add
 
 The inherited-event boundary lets the SideMind renderer ignore the seeded parent transcript and display only child-local user/assistant messages. `assistant-stream` frames provide live text deltas until the durable `assistant/message` arrives.
 
+Side follow-ups and close operations use the existing DSH command transport. They are distinguished from user-entered `/side <question>` text by the private prefix:
+
+```text
+__sidemind_internal_control_v1__:
+```
+
+This prevents arbitrary user text or JSON-looking questions from being interpreted as SideMind control messages.
+
+## Client surfaces
+
+### Side thread
+
+The right-sidebar body intentionally does not reproduce the parent transcript. It contains:
+
+1. a small fork/status strip;
+2. Side-local messages after the inherited boundary;
+3. a compact bottom composer.
+
+Assistant output prefers DSH's `MarkdownText`; user and assistant content fall back to SideMind's small safe renderer when that primitive is unavailable in an older Desktop build.
+
+The actual tab occurrence `AbortSignal` owns cleanup. This is intentionally used instead of newer `sidebarRight.registerCloseHandler()` APIs so the plugin remains compatible with the tested DSH Desktop build. Collapsing the sidebar does not abort the occurrence; removing/replacing the tab does.
+
+### BTW overlay
+
+BTW renders as one question plus one answer rather than a generic mini-chat. It exposes dismiss and raw-Markdown copy controls and listens for `Esc` / `C` while the overlay is active.
+
 ## Main-context isolation
 
-DSH's command subsystem always records ordinary command lifecycle events. SideMind therefore cannot make the parent log literally byte-for-byte untouched while still using the public command admission path.
+DSH's command subsystem records ordinary command lifecycle events. SideMind therefore cannot make the parent log literally byte-for-byte untouched while still using the public command admission path.
 
 What SideMind guarantees is narrower and useful:
 
-- `recordInput: false` prevents `/btw` questions and internal `/side` prompt bodies from being written into `command/run`.
+- `recordInput: false` prevents `/btw` questions, `/side` first questions, and internal Side control bodies from being written into `command/run`.
 - prompt/close control calls return success without answer text.
 - start calls return only the child address token needed by the browser.
 - no side user/assistant messages are appended to the parent model history.
@@ -92,4 +119,6 @@ What SideMind guarantees is narrower and useful:
 
 ## Why not continuable subagents?
 
-DSH's official continuable-subagent path is persistence-backed so it can cold-resume. SideMind's product contract is the opposite: closing the surface should destroy the temporary branch. Directly owning an in-memory AgentHandle gives SideMind deterministic teardown without leaving a resumable child behind.
+DSH's official continuable-subagent path is persistence-backed so it can cold-resume. SideMind's product contract is the opposite: closing the surface should destroy the temporary branch. Directly owning an in-memory `AgentHandle` gives SideMind deterministic teardown without leaving a resumable child behind.
+
+See [`DESIGN.md`](DESIGN.md) for the interaction references and visual rationale.
