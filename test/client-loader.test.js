@@ -19,29 +19,30 @@ test('client bundle registers under the package name', () => {
 })
 
 test('sidebar cleanup uses the tab occurrence signal instead of newer close-handler API', () => {
-  assert.doesNotMatch(client, /sidebarRight\\.registerCloseHandler/u)
-  assert.match(client, /tab\\?\\.signal/u)
-  assert.match(client, /addEventListener\\('abort'/u)
+  assert.equal(client.includes('sidebarRight.registerCloseHandler'), false)
+  assert.equal(client.includes('tab?.signal'), true)
+  assert.equal(client.includes("addEventListener('abort'"), true)
 })
 
 test('client uses prefixed internal side controls', () => {
-  assert.match(client, /__sidemind_internal_control_v1__:/u)
-  assert.match(client, /CONTROL_PREFIX.*JSON\\.stringify/su)
+  assert.equal(client.includes('__sidemind_internal_control_v1__:'), true)
+  assert.equal(client.includes('CONTROL_PREFIX'), true)
+  assert.equal(client.includes('JSON.stringify(payload)'), true)
 })
 
 test('side and btw render Markdown through the DSH primitive when available', () => {
-  assert.match(client, /dsh-client-ui-primitives/u)
-  assert.match(client, /NativeMarkdownText/u)
-  assert.match(client, /function MarkdownBody/u)
-  assert.match(client, /renderMarkdownBlocks/u)
+  assert.equal(client.includes('@deepseek-ai/dsh-client-ui-primitives'), true)
+  assert.equal(client.includes('NativeMarkdownText'), true)
+  assert.equal(client.includes('function MarkdownBody'), true)
+  assert.equal(client.includes('renderMarkdownBlocks'), true)
 })
 
 test('0.2 client exposes the compact side and BTW surfaces', () => {
   assert.equal(pkg.version, '0.2.0')
   assert.equal(clientEntry, './lib/client.js')
-  assert.match(client, /sidemind-contextbar/u)
-  assert.match(client, /sidemind-composer/u)
-  assert.match(client, /sidemind-btw-header/u)
-  assert.match(client, /C copy Markdown/u)
-  assert.match(client, /Enter send/u)
+  assert.equal(client.includes('sidemind-contextbar'), true)
+  assert.equal(client.includes('sidemind-composer'), true)
+  assert.equal(client.includes('sidemind-btw-header'), true)
+  assert.equal(client.includes('C copy Markdown'), true)
+  assert.equal(client.includes('Enter send'), true)
 })
